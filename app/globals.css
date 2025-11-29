@@ -41,3 +41,45 @@ body {
 .animate-wiggle {
   animation: wiggle 0.5s ease-in-out infinite;
 }
+/* Enhanced Typography */
+body {
+  font-weight: 500;
+}
+
+/* Task titles - bolder and darker */
+.task-title {
+  font-weight: 700;
+  color: #0A0A0A;
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+/* Task titles in dark mode (we'll use this in Sprint 3) */
+.dark .task-title {
+  color: #F5F5F5;
+}
+
+/* Completed task title */
+.task-title-completed {
+  font-weight: 700;
+  color: #78716C;
+  font-size: 18px;
+  line-height: 1.5;
+  text-decoration: line-through;
+}
+
+.dark .task-title-completed {
+  color: #A8A29E;
+}
+
+/* Section headers - sharper */
+.section-header {
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.05em;
+  color: #0A0A0A;
+}
+
+.dark .section-header {
+  color: #E7E5E4;
+}

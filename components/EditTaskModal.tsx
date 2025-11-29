@@ -44,6 +44,12 @@ export default function EditTaskModal({ todo, isOpen, onClose, onTaskUpdated }: 
     
     if (!todo || text.trim() === '') return;
 
+    // NEW: Require due date
+  if (!dueDate) {
+    alert('Please select a due date!');
+    return;
+  }
+
     setLoading(true);
 
     try {
@@ -110,7 +116,7 @@ export default function EditTaskModal({ todo, isOpen, onClose, onTaskUpdated }: 
             {/* Due Date */}
             <div>
               <label className="block text-sm font-medium text-[#57534E] mb-2">
-                Due Date
+                Due Date <span className="text-[#DC2626]">*</span>
               </label>
               <div className="flex gap-2 mb-2">
                 <button
