@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';  // ← Added useRef
 import { useAuth } from '@/contexts/AuthContext';
 import AuthForm from '@/components/AuthForm';
-import TodoList from '@/components/Todolist';  // ← Fixed case
+import TodoList from '@/components/Todolist';
 import AddTaskSheet from '@/components/AddTaskSheet';
 import Chomper from '@/components/Chomper';
 
@@ -13,23 +13,22 @@ export default function Home() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [chomperState, setChomperState] = useState<'idle' | 'chomping' | 'dancing'>('idle');
   const [tasksCount, setTasksCount] = useState(0);
-  const [prevTasksCount, setPrevTasksCount] = useState(0);
+  const prevTasksCountRef = useRef(0);  // ← Using useRef instead of useState
 
   // Trigger victory dance when all tasks complete
   useEffect(() => {
     // Celebrate when going from having tasks to zero tasks
-    if (tasksCount === 0 && prevTasksCount > 0) {
+    if (tasksCount === 0 && prevTasksCountRef.current > 0) {
       setChomperState('dancing');
       const timer = setTimeout(() => setChomperState('idle'), 3000);
-      return () => clearTimeout(timer); // Clean up timeout
+      prevTasksCountRef.current = tasksCount;
+      return () => clearTimeout(timer);
     }
-    setPrevTasksCount(tasksCount);
-  }, [tasksCount, prevTasksCount]);
+    prevTasksCountRef.current = tasksCount;
+  }, [tasksCount]);  // Only depends on tasksCount
 
   // Handle task completion (chomp animation)
-  // Only chomp if NOT completing the last task
   const handleTaskComplete = () => {
-    // Don't chomp if this is the last task (celebration will play instead)
     if (tasksCount > 1) {
       setChomperState('chomping');
       setTimeout(() => setChomperState('idle'), 1000);
