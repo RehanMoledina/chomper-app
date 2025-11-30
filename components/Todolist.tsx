@@ -123,6 +123,48 @@ export default function TodoList({ onTasksChange, onTaskComplete }: TodoListProp
 
   const handleToggleComplete = async (todo: Todo) => {
     try {
+      // If completing a recurring task, create new instance
+      if (!todo.completed && todo.is_recurring) {
+        // Calculate next due date
+        const currentDueDate = new Date(todo.due_date!);
+        let nextDueDate = new Date(currentDueDate);
+  
+        if (todo.recurrence_type === 'daily') {
+          nextDueDate.setDate(nextDueDate.getDate() + 1);
+        } else if (todo.recurrence_type === 'weekly') {
+          nextDueDate.setDate(nextDueDate.getDate() + 7);
+        } else if (todo.recurrence_type === 'monthly') {
+          // Add one month
+          nextDueDate.setMonth(nextDueDate.getMonth() + 1);
+          
+          // Set to the specific day
+          if (todo.recurrence_day) {
+            nextDueDate.setDate(todo.recurrence_day);
+          }
+        }
+  
+        // Create new recurring task instance
+        const { error: createError } = await supabase
+          .from('todos')
+          .insert([{
+            user_id: todo.user_id,
+            text: todo.text,
+            notes: todo.notes,
+            completed: false,
+            due_date: nextDueDate.toISOString().split('T')[0],
+            is_recurring: true,
+            recurrence_type: todo.recurrence_type,
+            recurrence_day: todo.recurrence_day,
+          }]);
+  
+        if (createError) {
+          console.error('Error creating recurring task:', createError);
+          alert('Failed to create next recurring task');
+          return;
+        }
+      }
+  
+      // Mark current task as completed
       const { error } = await supabase
         .from('todos')
         .update({ 
@@ -130,7 +172,7 @@ export default function TodoList({ onTasksChange, onTaskComplete }: TodoListProp
           updated_at: new Date().toISOString()
         })
         .eq('id', todo.id);
-
+  
       if (error) throw error;
       
       if (!todo.completed) {
@@ -224,6 +266,11 @@ export default function TodoList({ onTasksChange, onTaskComplete }: TodoListProp
                       <button onClick={() => setEditingTodo(todo)} className="text-left w-full">
                         <p className={todo.completed ? 'task-title-completed' : 'task-title'}>
                           {todo.text}
+                          {todo.is_recurring && (
+                            <span className="ml-2 text-xs bg-[#EA580C] text-white px-2 py-1 rounded-full">
+                              🔄 {todo.recurrence_type === 'daily' ? 'Daily' : todo.recurrence_type === 'weekly' ? 'Weekly' : 'Monthly'}
+                            </span>
+                          )}
                         </p>
                         {todo.due_date && (
                           <p className="text-xs text-[#EA580C] mt-1">📅 {formatDate(todo.due_date)}</p>
@@ -279,6 +326,11 @@ export default function TodoList({ onTasksChange, onTaskComplete }: TodoListProp
                         <button onClick={() => setEditingTodo(todo)} className="text-left w-full">
                           <p className="task-title-completed">
                             {todo.text}
+                            {todo.is_recurring && (
+                              <span className="ml-2 text-xs bg-[#78716C] text-white px-2 py-1 rounded-full">
+                                🔄 {todo.recurrence_type === 'daily' ? 'Daily' : todo.recurrence_type === 'weekly' ? 'Weekly' : 'Monthly'}
+                              </span>
+                            )}
                           </p>
                           {todo.due_date && (
                             <p className="text-xs text-[#78716C] mt-1">📅 {formatDate(todo.due_date)}</p>
@@ -343,6 +395,11 @@ export default function TodoList({ onTasksChange, onTaskComplete }: TodoListProp
                         <button onClick={() => setEditingTodo(todo)} className="text-left w-full">
                           <p className="task-title-completed">
                             {todo.text}
+                            {todo.is_recurring && (
+                              <span className="ml-2 text-xs bg-[#78716C] text-white px-2 py-1 rounded-full">
+                                🔄 {todo.recurrence_type === 'daily' ? 'Daily' : todo.recurrence_type === 'weekly' ? 'Weekly' : 'Monthly'}
+                              </span>
+                            )}
                           </p>
                           {todo.due_date && (
                             <p className="text-xs text-[#78716C] mt-1">📅 {formatDate(todo.due_date)}</p>
